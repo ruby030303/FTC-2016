@@ -93,7 +93,7 @@ public class TheMainAuto extends LinearOpMode{
 
     }
 
-    public void delay(double time){
+    /*public void delay(double time){
 
         currentTime = getRuntime();
 
@@ -105,7 +105,7 @@ public class TheMainAuto extends LinearOpMode{
             backRight.setPower(0.0);
 
         }
-
+*/
     }
 
     public void debug(){
