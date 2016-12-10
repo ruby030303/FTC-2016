@@ -12,10 +12,20 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Autonomous (name = "TheMainAuto", group = "Auto")
 public class TheMainAuto extends LinearOpMode{
 
+    //drive
     DcMotor frontRight;
     DcMotor frontLeft;
     DcMotor backRight;
     DcMotor backLeft;
+
+    //particle
+    DcMotor upTake;
+    DcMotor inTake;
+    DcMotor flicker;
+
+    Servo beaconOne;
+    Servo beaconTwo;
+
 
     double motorOne;
     double motorTwo;
@@ -35,8 +45,11 @@ public class TheMainAuto extends LinearOpMode{
 
     public void runOpMode(){
 
-      roboInit();
+         roboInit();
 
+        telemetry.addData(">", "Gyro Calibrating. Do Not move!");
+        telemetry.update();
+        gyro.calibrate();
 
     }
 
@@ -50,16 +63,9 @@ public class TheMainAuto extends LinearOpMode{
 
     }
 
-    public void atonomous(){
 
-        switchCase();
-
-
-    }
 
     public void switchCase(){
-
-
 
 
     }
@@ -93,7 +99,8 @@ public class TheMainAuto extends LinearOpMode{
 
     }
 
-    /*public void delay(double time){
+
+    public void delay(double time){
 
         currentTime = getRuntime();
 
@@ -105,7 +112,6 @@ public class TheMainAuto extends LinearOpMode{
             backRight.setPower(0.0);
 
         }
-*/
     }
 
     public void debug(){
