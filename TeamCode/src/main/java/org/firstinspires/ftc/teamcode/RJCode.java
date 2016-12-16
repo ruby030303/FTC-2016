@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 import java.lang.Math;
@@ -25,24 +26,28 @@ public class RJCode extends LinearOpMode {
     //servo
     private Servo   rightButtonServo;
     private Servo   leftButtonServo;
-    private Servo   scissorLiftServo;
     private Servo   loadFront;
 
-    //gamepad
+    //drive train
     private double  driveY;
     private double  driveX;
     private double  driveRotate;
 
     //shooter
     private boolean shooterButton;
+    private boolean previousShooterButton;
     private double  shooterSpeed;
     private int     shooterPosition;
     private int     currentShootPosition;
     private int     previousShootPosition;
 
     //beacon
-    private double  beaconPositionIn;
-    private double  beaconPositionOut;
+    private double  rBeaconPositionIn;
+    private double  lBeaconPositionIn;
+    private double  rBeaconPositionOut;
+    private double  lBeaconPositionOut;
+    private double  rightButtonPosition;
+    private double  leftButtonPosition;
     private boolean leftBeaconButton;
     private boolean rightBeaconButton;
     private boolean leftBeaconCurrent;
@@ -51,12 +56,14 @@ public class RJCode extends LinearOpMode {
     private boolean rightBeaconPrevious;
 
     //uptake and intake
-    private double  inUpSpeed;
+    private double  inUpGo;
     private double  inUpStop;
     private double  setInUp;
     private boolean inUpTakeButton;
+    private boolean inUpReverseButton;
     private boolean inUpTakeCurrent;
     private boolean inUpTakePrevious;
+    private boolean isRunning;
 
     //reload
     private double  loadFrontPosUp;
@@ -88,10 +95,20 @@ public class RJCode extends LinearOpMode {
         uptake      = hardwareMap.dcMotor.get("UPTAKE");
         shooter     = hardwareMap.dcMotor.get("SHOOTER");
 
+        //MOTOR REVERSE
+        shooter.setDirection(DcMotor.Direction.REVERSE);
+
+        //ENCODER TURN OFF
+        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        uptake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         //SERVO INIT
         rightButtonServo    = hardwareMap.servo.get("RIGHT_BUTTON");
         leftButtonServo     = hardwareMap.servo.get("LEFT_BUTTON");
-        scissorLiftServo    = hardwareMap.servo.get("SCISSOR_SERVO");
         loadFront           = hardwareMap.servo.get("LOAD_FRONT");
 
         //MECANUM DRIVE
@@ -101,29 +118,36 @@ public class RJCode extends LinearOpMode {
 
         //SHOOTER VARIABLES
         shooterButton           = false;
+        previousShooterButton   = false;
         shooterSpeed            = 1.0;
-        shooterPosition         = 1000; //TODO find the position for shooter
+        shooterPosition         = 3400; //TODO find the position for shooter
         currentShootPosition    = shooter.getCurrentPosition();
         previousShootPosition   = shooter.getCurrentPosition();
 
         //BEACON BUTTON VARIABLES
-        beaconPositionIn    = 0.0;
-        beaconPositionOut   = 1.0; //TODO find the position of the beacon button servos
+        lBeaconPositionIn    = 0.3;
+        lBeaconPositionOut   = 0.75;
+        rBeaconPositionIn    = 0.75;
+        rBeaconPositionOut   = 0.3; //TODO find the position of the beacon button servos
+        rightButtonPosition = rBeaconPositionIn;
+        leftButtonPosition  = lBeaconPositionIn;
         leftBeaconButton    = false;
         rightBeaconButton   = false;
         leftBeaconCurrent   = false;
         rightBeaconCurrent  = false;
 
         //INTAKE AND UPTAKE VARIABLES
-        inUpSpeed       = 1.0;
-        inUpStop        = 0.0;
-        setInUp         = inUpStop;
-        inUpTakeButton  = gamepad1.a;
+        inUpGo              = 1.0;
+        inUpStop            = 0.0;
+        setInUp             = inUpStop;
+        inUpTakeButton      = false;
+        inUpReverseButton   = false;
+        isRunning           = false;
 
         //RELOAD VARIABLES
         loadFrontPosUp      = 0.0; //TODO find the time and position for reloading
         loadFrontPosDown    = 1.0;
-        loadFrontTime       = 5.0;
+        loadFrontTime       = 0.3;
         loadIsReady         = false;
         loadButton          = false;
         loadCurrentPress    = false;
@@ -169,10 +193,10 @@ public class RJCode extends LinearOpMode {
 
     public void drive(double x, double y, double z){
 
+        backRight.setPower(expo(constrain(x + y - z),expoCurve));
         backLeft.setPower(expo(constrain(x - y  - z),expoCurve));
         frontRight.setPower(expo(constrain(x + y + z),expoCurve));
-        frontLeft.setPower(expo(constrain(x + y - z),expoCurve));
-        backRight.setPower(expo(constrain(x - y + z),expoCurve));
+        frontLeft.setPower(expo(constrain(x - y + z),expoCurve));
 
     }
 
@@ -187,13 +211,16 @@ public class RJCode extends LinearOpMode {
             speed = shooterSpeed;
 
         }
-        else if(currentShootPosition - previousShootPosition >= shooterPosition && shooterButton){
+        //this is where you press the button and it shoots
+        else if(currentShootPosition - previousShootPosition >= shooterPosition && shooterButton && !previousShooterButton){
 
             speed                   = shooterSpeed;
             previousShootPosition   = currentShootPosition;
 
         }
         else{speed = 0.0;}
+
+        previousShooterButton = shooterButton;
 
         shooter.setPower(speed);
 
@@ -207,6 +234,7 @@ public class RJCode extends LinearOpMode {
         if(loadCurrentPress && !loadPreviousPress){
 
             loadIsReady = true;
+            currentTime = getRuntime();
 
         }
 
@@ -224,76 +252,87 @@ public class RJCode extends LinearOpMode {
 
     private void intakeAndUptake(){
 
-        //TODO code the intake and uptake
-        setInUp         = inUpStop;
-        inUpTakeCurrent = inUpTakeButton;
+        inUpTakeButton      = gamepad1.a;
+        inUpReverseButton   = gamepad1.y;
+        setInUp             = inUpStop;
+        inUpTakeCurrent     = inUpTakeButton;
 
-        if(inUpTakeCurrent && !inUpTakePrevious && setInUp == inUpStop){
+        //this is where you press the button to activate the uptake and intake
+        if(inUpTakeCurrent && !inUpTakePrevious && !isRunning && !gamepad1.y && !gamepad1.start){
 
-            setInUp = inUpSpeed;
-
-        }
-
-        else if(inUpTakeCurrent && !inUpTakePrevious && setInUp == inUpSpeed){
-
-            setInUp = inUpStop;
+            isRunning   = true;
 
         }
 
-        else if(gamepad1.y){
+        else if(inUpTakeCurrent && !inUpTakePrevious && isRunning && !gamepad1.y){
 
-            intake.setPower(-setInUp);
-            uptake.setPower(-setInUp);
-
-        }
-        else{
-
-            intake.setPower(setInUp);
-            uptake.setPower(setInUp);
+            isRunning   = false;
 
         }
 
         inUpTakePrevious = inUpTakeCurrent;
 
+        if(isRunning && !inUpReverseButton){
+
+            intake.setPower(inUpGo);
+            uptake.setPower(inUpGo);
+
+        }
+
+        else if(!isRunning && !inUpReverseButton){
+
+            intake.setPower(inUpStop);
+            uptake.setPower(inUpStop);
+
+        }
+
+        if (inUpReverseButton){
+
+            intake.setPower(-inUpGo);
+            uptake.setPower(-inUpGo);
+
+        }
+
     }
 
-    private void beacon(){
+    private void beacon(){ //todo buttons are not working
 
-        leftBeaconButton = gamepad1.x;
-        rightBeaconButton = gamepad1.b;
+        leftBeaconButton    = gamepad1.x;
+        rightBeaconButton   = gamepad1.b;
 
         leftBeaconCurrent   = leftBeaconButton;
         rightBeaconCurrent  = rightBeaconButton;
 
-        if (leftBeaconCurrent && !leftBeaconPrevious && leftButtonServo.getPosition() == beaconPositionIn){
+        if (leftBeaconCurrent && !leftBeaconPrevious && leftButtonServo.getPosition() == lBeaconPositionIn){
 
-            leftButtonServo.setPosition(beaconPositionOut);
-
-        }
-        else if (leftBeaconCurrent && !leftBeaconPrevious && leftButtonServo.getPosition() == beaconPositionOut){
-
-            leftButtonServo.setPosition(beaconPositionIn);
+            leftButtonPosition = lBeaconPositionOut;
 
         }
-        if (rightBeaconCurrent && !rightBeaconPrevious && rightButtonServo.getPosition() == beaconPositionIn){
+        else if (leftBeaconCurrent && !leftBeaconPrevious && leftButtonServo.getPosition() == lBeaconPositionOut){
 
-            rightButtonServo.setPosition(beaconPositionOut);
+            leftButtonPosition = lBeaconPositionIn;
 
         }
-        else if (rightBeaconCurrent && !rightBeaconPrevious && rightButtonServo.getPosition() == beaconPositionOut){
+        if (rightBeaconCurrent && !rightBeaconPrevious && rightButtonServo.getPosition() == rBeaconPositionIn){
 
-            rightButtonServo.setPosition(beaconPositionIn);
+            rightButtonPosition = rBeaconPositionOut;
+
+        }
+        else if (rightBeaconCurrent && !rightBeaconPrevious && rightButtonServo.getPosition() == rBeaconPositionOut){
+
+            rightButtonPosition = rBeaconPositionIn;
 
         }
 
         leftBeaconPrevious   = leftBeaconCurrent;
         rightBeaconPrevious  = rightBeaconCurrent;
 
+        rightButtonServo.setPosition(rightButtonPosition);
+        leftButtonServo.setPosition(leftButtonPosition);
+
     }
 
-
     //TOOLS AND MATHS
-
     private void deadZone(){
 
         double x = Math.abs(gamepad1.left_stick_x);
@@ -346,7 +385,6 @@ public class RJCode extends LinearOpMode {
 
     private void delayMotorSpeed(double time, DcMotor motor1, double speed){
 
-        currentTime = getRuntime();
 
         while(getRuntime() - currentTime < time){
 
@@ -359,10 +397,8 @@ public class RJCode extends LinearOpMode {
 
     private boolean delayServoPosition(double time, Servo servo1, double position1, double position2, boolean isReady){
 
-        currentTime = getRuntime();
-
         if(getRuntime() - currentTime < time){servo1.setPosition(position1);}
-        else{servo1.setPosition(position2);}
+        else{servo1.setPosition(position2);isReady = false;}
 
         return isReady;
     }
@@ -373,6 +409,9 @@ public class RJCode extends LinearOpMode {
         telemetry.addData("MOTOR_STUFF_FL", frontLeft.getPower());
         telemetry.addData("MOTOR_STUFF_BR", backRight.getPower());
         telemetry.addData("MOTOR_STUFF_BL", backLeft.getPower());
+        telemetry.addData("FRONT_LEFT", loadFront.getPosition());
+        telemetry.addData("IS_READY", loadIsReady);
+        telemetry.addData("CURRENT_TIME",(getRuntime()-currentTime));
         telemetry.update();
 
     }
