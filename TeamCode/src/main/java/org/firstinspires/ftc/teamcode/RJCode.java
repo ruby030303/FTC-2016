@@ -244,7 +244,10 @@ public class RJCode extends LinearOpMode {
 
         }
 
-        else if(!loadIsReady){loadFront.setPosition(loadFrontPosDown);}
+        else if(!loadIsReady){
+
+            loadFront.setPosition(loadFrontPosDown);
+        }
 
         loadPreviousPress = loadCurrentPress;
 
