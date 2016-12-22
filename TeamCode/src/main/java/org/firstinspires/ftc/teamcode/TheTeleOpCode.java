@@ -71,7 +71,7 @@ public class TheTeleOpCode extends LinearOpMode{
             driveUpDate();
             shooter();
             debug();
-
+            reload();
 
         }
 

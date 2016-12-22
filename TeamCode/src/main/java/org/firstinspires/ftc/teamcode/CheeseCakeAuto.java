@@ -21,6 +21,8 @@ public class CheeseCakeAuto extends LinearOpMode {
 
         roboInit();
 
+        waitForStart();
+
         while(opModeIsActive()){
 
             goForward(0.5, 5.0);
