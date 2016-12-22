@@ -25,7 +25,7 @@ public class CheeseCakeAuto extends LinearOpMode {
 
         while(opModeIsActive()){
 
-            goForward(0.5, 5.0);
+            goForward(0.5, 2.0);
 
             idle();
 
@@ -50,7 +50,7 @@ public class CheeseCakeAuto extends LinearOpMode {
 
         while(getRuntime()-currentTime< checkTime){
 
-            rightMotor.setPower(speed);
+            rightMotor.setPower(-speed);
             leftMotor.setPower(speed);
         }
 
