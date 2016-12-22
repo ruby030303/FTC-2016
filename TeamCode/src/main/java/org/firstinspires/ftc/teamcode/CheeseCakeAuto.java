@@ -27,10 +27,11 @@ public class CheeseCakeAuto extends LinearOpMode {
 
             goForward(0.5, 5.0);
 
+            idle();
 
         }
 
-        idle();
+
 
     }
 
