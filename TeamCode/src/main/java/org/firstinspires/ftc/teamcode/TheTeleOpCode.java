@@ -32,6 +32,10 @@ public class TheTeleOpCode extends LinearOpMode{
     //Beacons
     Servo leftButton;
     Servo rightButton;
+    boolean leftBeaconButton;
+    boolean rightBeaconButton;
+    boolean leftBeaconCurrent;
+    boolean rightBeaconCurrent
 
     //driving
     double driveY;
@@ -114,6 +118,11 @@ public class TheTeleOpCode extends LinearOpMode{
         loadButton          = false;
         loadCurrentPress    = false;
         loadPreviousPress   = false;
+        leftBeaconButton    = false;
+        rightBeaconButton   = false;
+        leftBeaconCurrent   = false;
+        rightBeaconCurrent  = false;
+
 
     }
 
@@ -165,11 +174,11 @@ public class TheTeleOpCode extends LinearOpMode{
 
         }
 
-       // if(loadIsReady){
+        if(loadIsReady){
 
-       //     delayServoPosition(loadFrontTime, loadFront, loadFrontPosUp, loadFrontPosDown, loadIsReady);
+          delayServoPosition(loadFrontTime, loadFront, loadFrontPosUp, loadFrontPosDown, loadIsReady);
 
-      //  }
+        }
 
         else if(!loadIsReady){
 
@@ -199,6 +208,18 @@ public class TheTeleOpCode extends LinearOpMode{
         speed = Range.clip(speed, low, high);
 
         return speed;
+
+    }
+
+    public void  beacons(){
+
+        leftBeaconButton  = gamepad1.x;
+        rightBeaconButton = gamepad1.y;
+
+        leftBeaconCurrent  = leftBeaconButton;
+        rightBeaconCurrent = rightBeaconButton;
+
+
 
     }
 
