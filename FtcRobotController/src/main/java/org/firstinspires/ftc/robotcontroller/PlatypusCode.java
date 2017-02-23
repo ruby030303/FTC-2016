@@ -26,6 +26,15 @@ public class PlatypusCode extends LinearOpMode{
         double colorOffSet;
         double out;
 
+        public void roboInit(){
+
+            maxValue = 0.5;
+            speed = 1.0;
+            red = 2.0;
+            colorOffSet = 0.0;
+            out = 1.0;
+        }
+
 
         public void runOpMode(){
 
@@ -33,15 +42,6 @@ public class PlatypusCode extends LinearOpMode{
           distanceSensor();
 
 
-        }
-
-        public void roboInit(){
-
-            maxValue = 0.7;
-            speed = 1.0;
-            red = 2.0;
-            colorOffSet = 0.0;
-            out = 1.0;
         }
 
         public void distanceSensor(){
@@ -102,6 +102,9 @@ public class PlatypusCode extends LinearOpMode{
     public void robotStop(){
 
         frontLeft.setPower(0.0);
+        frontRight.setPower(0.0);
+        backLeft.setPower(0.0);
+        backRight.setPower(0.0);
     }
 
     public void debug(){
