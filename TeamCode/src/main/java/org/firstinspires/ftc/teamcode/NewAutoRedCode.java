@@ -72,6 +72,7 @@ public class NewAutoRedCode extends LinearOpMode {
     double  lBeaconPositionOut;
     double  rBeaconPositionIn;
     double  rBeaconPositionOut;
+    boolean rightButtonServoOut;
 
     //touch sensor
     boolean leftButton;
@@ -133,6 +134,7 @@ public class NewAutoRedCode extends LinearOpMode {
         rBeaconPositionOut   = 0.3;
         rightButtonServo.setPosition(rBeaconPositionIn);
         leftButtonServo.setPosition(lBeaconPositionIn);
+        rightButtonServoOut = false;
 
         //SHOOTER
         shooterSpeed            = 1.0;
@@ -227,21 +229,25 @@ public class NewAutoRedCode extends LinearOpMode {
                 break;
             case 8: distanceSensor(0.5, currentTime);
                 break;
-            case 9: currentTime = getRuntime();while(getRuntime() - currentTime < 2.0 && opModeIsActive())strafe(0.5, "right");value++;
+            case 9: servoCheck();
                 break;
-            case 20: moveToWall(0.5);
+            case 10: currentTime = getRuntime();while(getRuntime() - currentTime < 2.0 && opModeIsActive())strafe(0.5, "right");value++;
                 break;
-            case 10: distanceSensor(0.5, currentTime);
+            case 11: moveToWall(0.5);
                 break;
-            case 11: currentTime = getRuntime();while(getRuntime() - currentTime < 5.0 && opModeIsActive())strafe(0.5, "left");value++;
+            case 12: distanceSensor(0.5, currentTime);
                 break;
-            case 12: moveToWall(0.5);
+            case 13: servoCheck();
                 break;
-            case 13: currentTime = getRuntime();while(getRuntime()-currentTime < 3.0 && opModeIsActive()){robotDrive(-0.3, 0.3);}robotStop();value++;
+            case 14: currentTime = getRuntime();while(getRuntime() - currentTime < 5.0 && opModeIsActive())strafe(0.5, "left");value++;
                 break;
-            case 14: gyroRotate(-0.5, 240);
+            case 15: moveToWall(0.5);
                 break;
-            case 15: currentTime = getRuntime();while(getRuntime()-currentTime < 3.5 && opModeIsActive()){robotDrive(1.0, -1.0);}robotStop();value++;
+            case 16: currentTime = getRuntime();while(getRuntime()-currentTime < 3.0 && opModeIsActive()){robotDrive(-0.3, 0.3);}robotStop();value++;
+                break;
+            case 17: gyroRotate(-0.5, 240);
+                break;
+            case 18: currentTime = getRuntime();while(getRuntime()-currentTime < 3.5 && opModeIsActive()){robotDrive(1.0, -1.0);}robotStop();value++;
                 break;
             default:frontLeft.setPower(0.0);frontRight.setPower(0.0);backLeft.setPower(0.0);backRight.setPower(0.0);
                 break;
@@ -361,12 +367,22 @@ public class NewAutoRedCode extends LinearOpMode {
 
             rightButtonServo.setPosition(rBeaconPositionOut);
             keepItOnWall(0.3);
+            rightButtonServoOut = true;
 
         }
 
-        rightButtonServo.setPosition(rBeaconPositionIn);
         value++;
 
+    }
+
+    public void servoCheck(){
+
+        if(rightButtonServoOut){
+
+            rightButtonServo.setPosition(rBeaconPositionIn);
+
+        }
+        value++;
     }
 
     public void distanceSensor(double speed, double time){
