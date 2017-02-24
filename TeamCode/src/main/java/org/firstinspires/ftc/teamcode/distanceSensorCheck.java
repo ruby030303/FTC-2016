@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 /**
  * Created by cicada03 on 2/23/17.
  */
-@Autonomous(name = "NewAutoRedCode", group = "Auto")
-public class NewAutoRedCode extends LinearOpMode {
+@Autonomous(name = "distanceSensorCheck", group = "Auto")
+public class distanceSensorCheck extends LinearOpMode {
 
     DcMotor frontRight;
     DcMotor frontLeft;
@@ -35,7 +35,7 @@ public class NewAutoRedCode extends LinearOpMode {
 
     //color sensor
     ColorSensor beaconColor;
-    
+
     //distance sensor
     OpticalDistanceSensor dSensor;
     double dSensorValue;
@@ -95,7 +95,7 @@ public class NewAutoRedCode extends LinearOpMode {
     boolean quickFix;
 
     int    value = 1;
-    
+
     public void roboInit(){
 
         frontRight  = hardwareMap.dcMotor.get("FRONT_RIGHT");
@@ -167,14 +167,14 @@ public class NewAutoRedCode extends LinearOpMode {
         quickFix    = false;
 
         value       = 1;
-        
+
     }
     public void runOpMode(){
 
         roboInit();
 
         gyroInit();
-        
+
         beaconColor.enableLed(false);
 
         waitForStart();
@@ -182,10 +182,12 @@ public class NewAutoRedCode extends LinearOpMode {
         //our main teleop loop
         while(opModeIsActive()) {
 
-            beaconSwitchCase();
+           /* beaconSwitchCase();
             debug();
 
-            idle();
+            idle();*/
+
+            distanceSensor(0.5, currentTime);
 
         }
 
@@ -370,7 +372,10 @@ public class NewAutoRedCode extends LinearOpMode {
 
         }
 
-        value++;
+        delay(1.0);
+        servoCheck();
+
+        //value++;
 
     }
 
@@ -382,7 +387,7 @@ public class NewAutoRedCode extends LinearOpMode {
             rightButtonServoOut = false;
         }
 
-        value++;
+        //value++;
     }
 
     public void distanceSensor(double speed, double time){
@@ -395,7 +400,7 @@ public class NewAutoRedCode extends LinearOpMode {
         }
 
         robotStop();
-        
+
         checkColor(0.5, currentTime);
 
     }
@@ -544,12 +549,12 @@ public class NewAutoRedCode extends LinearOpMode {
 
         telemetry.addData("HEADING", gyro.getHeading());
         telemetry.addData("INT_Z", gyro.getIntegratedZValue());
-        
+
         telemetry.addData("CHECK_RED_COLOR", beaconColor.red());
         telemetry.addData("CHECK_BLUE_COLOR", beaconColor.blue());
 
         telemetry.update();
 
     }
-    }
+}
 

@@ -35,7 +35,7 @@ public class TheTeleOpCode extends LinearOpMode{
     boolean leftBeaconButton;
     boolean rightBeaconButton;
     boolean leftBeaconCurrent;
-    boolean rightBeaconCurrent
+    boolean rightBeaconCurrent;
 
     //driving
     double driveY;
