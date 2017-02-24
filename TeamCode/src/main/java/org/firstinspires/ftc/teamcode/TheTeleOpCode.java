@@ -11,8 +11,12 @@ import com.qualcomm.robotcore.util.Range;
  */
 @TeleOp (name = "TheTeleOpCode", group = "TeleOp")
 public class TheTeleOpCode extends LinearOpMode{
+    @Override
+    public void runOpMode() throws InterruptedException {
 
+    }
 
+/*
     //Drive
     DcMotor frontRight;
     DcMotor frontLeft;
@@ -234,5 +238,5 @@ public class TheTeleOpCode extends LinearOpMode{
         telemetry.addData("CURRENT_TIME",(getRuntime()- currentTime));
         telemetry.update();
 
-    }
+    }*/
 }

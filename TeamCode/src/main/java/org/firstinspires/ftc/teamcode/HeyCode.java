@@ -13,7 +13,13 @@ import com.qualcomm.robotcore.hardware.GyroSensor;
  */
 @TeleOp(name = "HeyCode" , group = "TeleOp")
 public class HeyCode extends LinearOpMode {
+    @Override
+    public void runOpMode() throws InterruptedException {
 
+    }
+
+
+    /*
     //drive
     DcMotor frontRight;
     DcMotor frontLeft;
@@ -95,6 +101,6 @@ public class HeyCode extends LinearOpMode {
 
 
 
-
+*/
 
 }

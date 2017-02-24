@@ -106,6 +106,9 @@ public class distanceSensorCheck extends LinearOpMode {
         uptake      = hardwareMap.dcMotor.get("UPTAKE");
         shooter     = hardwareMap.dcMotor.get("SHOOTER");
 
+        //dsensor
+        dSensor = hardwareMap.opticalDistanceSensor.get("sensor_ods");
+
         //SERVO INIT
         rightButtonServo    = hardwareMap.servo.get("RIGHT_BUTTON");
         leftButtonServo     = hardwareMap.servo.get("LEFT_BUTTON");
@@ -152,7 +155,7 @@ public class distanceSensorCheck extends LinearOpMode {
         leftButton  = false;
         rightButton = false;
 
-        maxValue = 0.5;
+        maxValue = 0.01;
 
         //GYRO ROTATE
         curResetState   = false;
@@ -182,12 +185,12 @@ public class distanceSensorCheck extends LinearOpMode {
         //our main teleop loop
         while(opModeIsActive()) {
 
-           /* beaconSwitchCase();
+            //beaconSwitchCase();
+            distanceSensor(0.25, currentTime);
             debug();
 
-            idle();*/
+            idle();
 
-            distanceSensor(0.5, currentTime);
 
         }
 
@@ -316,15 +319,16 @@ public class distanceSensorCheck extends LinearOpMode {
         }
 
         // wallFix(0.5);
-        moveToWall(0.5);
-
+        while(!leftSwitch.isPressed() && !rightSwitch.isPressed() && opModeIsActive()) {
+            moveToWall(0.25);
+        }
         //stop and press button
         frontRight.setPower(0.0);
         backRight.setPower(0.0);
         frontLeft.setPower(0.0);
         backLeft.setPower(0.0);
 
-        pressBeaconButton(0.5);
+       pressBeaconButton(0.5);
 
     }
 
@@ -391,17 +395,17 @@ public class distanceSensorCheck extends LinearOpMode {
     }
 
     public void distanceSensor(double speed, double time){
-        dSensorValue = dSensor.getRawLightDetected();
 
-        while(dSensorValue < maxValue && opModeIsActive()){
+        while(dSensor.getRawLightDetected() < maxValue && opModeIsActive()){
 
             strafe(speed, "right");
 
         }
 
-        robotStop();
 
-        checkColor(0.5, currentTime);
+            robotStop();
+
+        checkColor(0.25, currentTime);
 
     }
 
