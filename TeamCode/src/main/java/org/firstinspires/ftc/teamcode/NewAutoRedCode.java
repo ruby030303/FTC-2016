@@ -5,95 +5,98 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
- * Created by cicada01 on 12/9/16.
+ * Created by cicada03 on 2/23/17.
  */
-@Autonomous(name = "RedAuto", group = "Cayles")
-public class CompetitionReadyAutoRed extends LinearOpMode {
+@Autonomous(name = "NewAutoRedCode", group = "Auto")
+public class NewAutoRedCode extends LinearOpMode {
 
-    //motor
     DcMotor frontRight;
     DcMotor frontLeft;
     DcMotor backRight;
     DcMotor backLeft;
-    private DcMotor uptake;
-    private DcMotor intake;
-    private DcMotor shooter;
+    DcMotor uptake;
+    DcMotor intake;
+    DcMotor shooter;
 
     //servo
-    private Servo rightButtonServo;
-    private Servo leftButtonServo;
-    private Servo loadFront;
+    Servo rightButtonServo;
+    Servo leftButtonServo;
+    Servo loadFront;
+    double out;
 
     //gyro
     ModernRoboticsI2cGyro gyro;
 
     //color sensor
-    ColorSensor lineColor;
     ColorSensor beaconColor;
+    
+    //distance sensor
+    OpticalDistanceSensor dSensor;
+    double dSensorValue;
+    double maxValue;
 
     //touch sensors
     TouchSensor leftSwitch;
     TouchSensor rightSwitch;
 
     //encoders
-    static final double     COUNTS_PER_MOTOR_REV    = 1680;
+    static final double     COUNTS_PER_MOTOR_REV    = 1120;
     static final double     DRIVE_GEAR_REDUCTION    = 1.0;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.94;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
-    private ElapsedTime runtime                     = new ElapsedTime();
+    ElapsedTime runtime                     = new ElapsedTime();
 
     //shooter
-    private double shooterSpeed;
-    private double shooterPosition;
-    private int    currentShootPosition;
-    private int    previousShootPosition;
+    double shooterSpeed;
+    double shooterPosition;
+    int    currentShootPosition;
+    int    previousShootPosition;
 
     //reload
-    private double  loadFrontPosUp;
-    private double  loadFrontPosDown;
-    private double  loadFrontTime;
-    private boolean loadIsReady;
+    double  loadFrontPosUp;
+    double  loadFrontPosDown;
+    double  loadFrontTime;
+    boolean loadIsReady;
 
     //beacon
-    private double  lBeaconPositionIn;
-    private double  lBeaconPositionOut;
-    private double  rBeaconPositionIn;
-    private double  rBeaconPositionOut;
+    double  lBeaconPositionIn;
+    double  lBeaconPositionOut;
+    double  rBeaconPositionIn;
+    double  rBeaconPositionOut;
 
     //touch sensor
-    private boolean leftButton;
-    private boolean rightButton;
+    boolean leftButton;
+    boolean rightButton;
 
     //color sensor
-    private double colorOffset;
-    private double red;
+    double colorOffset;
+    double red;
 
     //gyro rotate
-    private boolean curResetState;
-    private boolean lastResetState;
-    private int     headingEncoder;
-    private int     headingOffset;
-    private double  turnPower;
+    boolean curResetState;
+    boolean lastResetState;
+    int     headingEncoder;
+    int     headingOffset;
+    double  turnPower;
 
-    private double currentTime;
-    private double strafeTime;
-    private double strafeSpeed;
-    private boolean quickFix;
+    double currentTime;
+    double strafeTime;
+    double strafeSpeed;
+    boolean quickFix;
 
     int    value = 1;
-
+    
     public void roboInit(){
 
-
-        //MOTOR INIT
         frontRight  = hardwareMap.dcMotor.get("FRONT_RIGHT");
         frontLeft   = hardwareMap.dcMotor.get("FRONT_LEFT");
         backRight   = hardwareMap.dcMotor.get("BACK_RIGHT");
@@ -114,7 +117,6 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("GYRO");
 
         //COLOR SENSOR
-        lineColor   = hardwareMap.colorSensor.get("LINE_COLOR");
         beaconColor = hardwareMap.colorSensor.get("BEACON_COLOR");
         beaconColor.enableLed(false);
         colorOffset = 0;
@@ -148,6 +150,8 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
         leftButton  = false;
         rightButton = false;
 
+        maxValue = 0.5;
+
         //GYRO ROTATE
         curResetState   = false;
         lastResetState  = false;
@@ -161,16 +165,14 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
         quickFix    = false;
 
         value       = 1;
-
+        
     }
-
-    public void runOpMode()  {
+    public void runOpMode(){
 
         roboInit();
 
         gyroInit();
-
-        lineColor.enableLed(false);
+        
         beaconColor.enableLed(false);
 
         waitForStart();
@@ -205,7 +207,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void beaconSwitchCase(){
+    public void beaconSwitchCase(){
 
         switch(value){
 
@@ -223,13 +225,13 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
                 break;
             case 7: moveToWall(0.5);
                 break;
-            case 8: strafeToLine(0.5,currentTime);
+            case 8: distanceSensor(0.5, currentTime);
                 break;
             case 9: currentTime = getRuntime();while(getRuntime() - currentTime < 2.0 && opModeIsActive())strafe(0.5, "right");value++;
                 break;
             case 20: moveToWall(0.5);
                 break;
-            case 10: strafeToLine(0.5,currentTime);
+            case 10: distanceSensor(0.5, currentTime);
                 break;
             case 11: currentTime = getRuntime();while(getRuntime() - currentTime < 5.0 && opModeIsActive())strafe(0.5, "left");value++;
                 break;
@@ -248,7 +250,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void robotStop(){
+    public void robotStop(){
 
         frontRight.setPower(0.0);
         backRight.setPower(0.0);
@@ -258,7 +260,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void robotDrive(double left, double right){
+    public void robotDrive(double left, double right){
 
         frontRight.setPower(right);
         backRight.setPower(right);
@@ -267,7 +269,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void strafe(double speed, String direction){
+    public void strafe(double speed, String direction){
 
         if(direction == "right"){
 
@@ -295,7 +297,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void strafeToLine(double speed, double time){
+    public void checkColor(double speed, double time){
 
 
         while(beaconColor.red() < red + colorOffset && opModeIsActive()){//getRuntime() - currentTime < strafeTime && !quickFix){
@@ -318,7 +320,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void shoot(){
+    public void shoot(){
 
         while(shooter.getCurrentPosition() - previousShootPosition < shooterPosition && opModeIsActive()){
 
@@ -334,7 +336,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
         value++;
     }
 
-    private void reload(){
+    public void reload(){
 
         currentTime = getRuntime();
 
@@ -351,7 +353,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void pressBeaconButton(double time) {
+    public void pressBeaconButton(double time) {
 
         currentTime = getRuntime();
 
@@ -367,7 +369,22 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void encoderDrive(double speed, double leftInches, double rightInches, double timeoutS, int heading) {
+    public void distanceSensor(double speed, double time){
+        dSensorValue = dSensor.getRawLightDetected();
+
+        while(dSensorValue < maxValue && opModeIsActive()){
+
+            strafe(speed, "right");
+
+        }
+
+        robotStop();
+        
+        checkColor(0.5, currentTime);
+
+    }
+
+    public void encoderDrive(double speed, double leftInches, double rightInches, double timeoutS, int heading) {
         int newLeftTarget;
         int newRightTarget;
 
@@ -421,7 +438,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
         }
     }
 
-    private void gyroRotate(double speed, int heading) {
+    public void gyroRotate(double speed, int heading) {
 
         while(gyro.getHeading() < heading - headingOffset || gyro.getHeading() > heading + headingOffset && opModeIsActive()){
 
@@ -442,7 +459,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private void moveToWall(double speed){
+    public void moveToWall(double speed){
 
         leftButton  = leftSwitch.isPressed();
         rightButton = rightSwitch.isPressed();
@@ -468,30 +485,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private  void wallFix(double speed){
-
-        while(!leftSwitch.isPressed() || !rightSwitch.isPressed() && opModeIsActive()){
-
-            if(!leftButton){
-                frontLeft.setPower(speed);
-                backLeft.setPower(speed);
-            }
-            else if(leftButton){
-                frontLeft.setPower(0.0);
-                backLeft.setPower(0.0);
-            }
-            if(!rightButton){
-                frontRight.setPower(-speed);
-                backRight.setPower(-speed);
-            }
-            else if(rightButton){
-                frontRight.setPower(0.0);
-                backRight.setPower(0.0);
-            }
-        }
-    }
-
-    private void keepItOnWall(double speed){
+    public void keepItOnWall(double speed){
 
         leftButton  = leftSwitch.isPressed();
         rightButton = rightSwitch.isPressed();
@@ -516,15 +510,7 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
     }
 
-    private double stabalizeRobo(int heading) {
-
-        double gyroOffset = (gyro.getIntegratedZValue()-heading)*turnPower;
-
-        return gyroOffset;
-
-    }
-
-    private void delay(double time){
+    public void delay(double time){
 
         currentTime = getRuntime();
 
@@ -542,12 +528,12 @@ public class CompetitionReadyAutoRed extends LinearOpMode {
 
         telemetry.addData("HEADING", gyro.getHeading());
         telemetry.addData("INT_Z", gyro.getIntegratedZValue());
-
-        telemetry.addData("CHECK_LINE_COLOR", lineColor.red());
+        
         telemetry.addData("CHECK_RED_COLOR", beaconColor.red());
         telemetry.addData("CHECK_BLUE_COLOR", beaconColor.blue());
 
         telemetry.update();
 
     }
-}
+    }
+
